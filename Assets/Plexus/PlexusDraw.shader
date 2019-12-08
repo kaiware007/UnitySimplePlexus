@@ -47,7 +47,7 @@
 			float scale : TEXCOORD1;
 			float particleIntensity : TEXCOORD2;
 			float lineIntensity : TEXCOORD3;
-			float4 positions[7] : TEXCOORD4;
+			float4 positions[13] : TEXCOORD4;
 		};
 
 		struct g2f
@@ -107,13 +107,19 @@
 			o.lineIntensity = saturate(o.particleIntensity);
 
 			// 隣接する頂点の座標を取得
-			float4 pos0 = UNITY_SAMPLE_TEX3D_LOD(_PosTex3D, vpos + float3(0, 0, _PosTexTexelSize.z), 0);
-			float4 pos1 = UNITY_SAMPLE_TEX3D_LOD(_PosTex3D, vpos + float3(_PosTexTexelSize.x, 0, _PosTexTexelSize.z), 0);
-			float4 pos2 = UNITY_SAMPLE_TEX3D_LOD(_PosTex3D, vpos + float3(_PosTexTexelSize.x, 0, 0), 0);
-			float4 pos3 = UNITY_SAMPLE_TEX3D_LOD(_PosTex3D, vpos + float3(0, _PosTexTexelSize.y, 0), 0);
-			float4 pos4 = UNITY_SAMPLE_TEX3D_LOD(_PosTex3D, vpos + float3(0, _PosTexTexelSize.yz), 0);
-			float4 pos5 = UNITY_SAMPLE_TEX3D_LOD(_PosTex3D, vpos + float3(_PosTexTexelSize.xyz), 0);
-			float4 pos6 = UNITY_SAMPLE_TEX3D_LOD(_PosTex3D, vpos + float3(_PosTexTexelSize.xy, 0), 0);
+			float4 pos0  = UNITY_SAMPLE_TEX3D_LOD(_PosTex3D, vpos + float3(0,					0,						_PosTexTexelSize.z), 0);
+			float4 pos1  = UNITY_SAMPLE_TEX3D_LOD(_PosTex3D, vpos + float3(_PosTexTexelSize.x,	0,						_PosTexTexelSize.z), 0);
+			float4 pos2  = UNITY_SAMPLE_TEX3D_LOD(_PosTex3D, vpos + float3(_PosTexTexelSize.x,	0,						0), 0);
+			float4 pos3  = UNITY_SAMPLE_TEX3D_LOD(_PosTex3D, vpos + float3(0,					_PosTexTexelSize.y,		0), 0);
+			float4 pos4  = UNITY_SAMPLE_TEX3D_LOD(_PosTex3D, vpos + float3(0,					_PosTexTexelSize.y,		_PosTexTexelSize.z), 0);
+			float4 pos5  = UNITY_SAMPLE_TEX3D_LOD(_PosTex3D, vpos + float3(_PosTexTexelSize.x,	_PosTexTexelSize.y,		_PosTexTexelSize.z), 0);
+			float4 pos6  = UNITY_SAMPLE_TEX3D_LOD(_PosTex3D, vpos + float3(_PosTexTexelSize.x,	_PosTexTexelSize.y,		0), 0);
+			float4 pos7  = UNITY_SAMPLE_TEX3D_LOD(_PosTex3D, vpos + float3(_PosTexTexelSize.x,	-_PosTexTexelSize.y,	_PosTexTexelSize.z), 0);
+			float4 pos8  = UNITY_SAMPLE_TEX3D_LOD(_PosTex3D, vpos + float3(_PosTexTexelSize.x,	-_PosTexTexelSize.y,	0), 0);
+			float4 pos9  = UNITY_SAMPLE_TEX3D_LOD(_PosTex3D, vpos + float3(_PosTexTexelSize.x,	-_PosTexTexelSize.y,	_PosTexTexelSize.z), 0);
+			float4 pos10 = UNITY_SAMPLE_TEX3D_LOD(_PosTex3D, vpos + float3(_PosTexTexelSize.x,	0,						-_PosTexTexelSize.z), 0);
+			float4 pos11 = UNITY_SAMPLE_TEX3D_LOD(_PosTex3D, vpos + float3(0,					_PosTexTexelSize.y,		-_PosTexTexelSize.z), 0);
+			float4 pos12 = UNITY_SAMPLE_TEX3D_LOD(_PosTex3D, vpos + float3(_PosTexTexelSize.xy,							-_PosTexTexelSize.z), 0);
 
 			// ワールド座標に変換
 			o.positions[0] = mul(unity_ObjectToWorld, pos0);
@@ -123,11 +129,18 @@
 			o.positions[4] = mul(unity_ObjectToWorld, pos4);
 			o.positions[5] = mul(unity_ObjectToWorld, pos5);
 			o.positions[6] = mul(unity_ObjectToWorld, pos6);
+			o.positions[7] = mul(unity_ObjectToWorld, pos7);
+			o.positions[8] = mul(unity_ObjectToWorld, pos8);
+			o.positions[9] = mul(unity_ObjectToWorld, pos9);
+			o.positions[10] = mul(unity_ObjectToWorld, pos10);
+			o.positions[11] = mul(unity_ObjectToWorld, pos11);
+			o.positions[12] = mul(unity_ObjectToWorld, pos12);
+
 			return o;
 		}
 
 		// ジオメトリシェーダ
-		[maxvertexcount(46)]
+		[maxvertexcount(82)]
 		void geom(point v2g input[1], inout TriangleStream<g2f> outStream)
 		{
 			g2f output;
@@ -168,10 +181,10 @@
 			// 線の処理
 			if (lineIntensity > 0.0) {
 				// 近い点同士を線で結ぶ
-				float cameraDiff = pos.xyz - _WorldSpaceCameraPos;
+				float3 cameraDiff = pos.xyz - _WorldSpaceCameraPos;
 				float3 normal = normalize(cameraDiff);
 
-				for (int i = 0; i < 7; i++)
+				for (int i = 0; i < 13; i++)
 				{
 					float4 targetPos = input[0].positions[i];
 
